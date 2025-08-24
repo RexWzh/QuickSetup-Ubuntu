@@ -9,7 +9,7 @@ bash ${LOCAL_DIR}/apts/basic.sh
 bash ${LOCAL_DIR}/config_files/apt_sourcd.sh
 
 # debs
-bash ${LOCAL_DIR}/debs/options.sh
+bash ${LOCAL_DIR}/debs/desktop.sh
 
 # vscode extensions
 bash ${LOCAL_DIR}/others/vscode.sh

@@ -1,0 +1,104 @@
+# disable update reminder
+zstyle ':omz:update' mode disabled
+
+# tmux
+alias tl="tmux ls"
+alias tn="tmux new -s"
+alias ta="tmux attach -t"
+alias tk="tmux kill-session -t"
+
+# edit zsh config
+alias vzsh="vim ~/.zshrc"
+alias valias="vim ~/.zsh_aliases"
+alias szsh="source ~/.zshrc"
+alias salias="source ~/.zsh_aliases"
+alias czsh="code ~/.zshrc"
+alias calias="code ~/.zsh_aliases"
+
+# docker
+alias dup="docker-compose up -d"
+alias dpull="docker-compose pull"
+alias dps="docker-compose ps"
+alias ddown="docker-compose down"
+alias drestart="docker-compose restart"
+alias dlog="docker-compose logs -f"
+dockerin(){
+   docker exec -it $1 /bin/bash
+}
+
+# nginx
+alias cdnginx="cd /etc/nginx/sites-available"
+alias ngt="sudo nginx -t"
+alias ngr="sudo nginx -s reload"
+
+# conda
+alias cda="conda activate"
+alias cdd="conda deactivate"
+alias cdls="conda env list"
+alias cdrm="conda env remove --name"
+# cuda
+alias c0="CUDA_VISIBLE_DEVICES=0"
+alias c1="CUDA_VISIBLE_DEVICES=1"
+alias c2="CUDA_VISIBLE_DEVICES=2"
+alias c3="CUDA_VISIBLE_DEVICES=3"
+alias c4="CUDA_VISIBLE_DEVICES=4"
+alias c5="CUDA_VISIBLE_DEVICES=5"
+alias c6="CUDA_VISIBLE_DEVICES=6"
+alias c7="CUDA_VISIBLE_DEVICES=7"
+
+# Jupyter
+addkernel (){
+    python -m ipykernel install --name $1 --user
+}
+
+# pip install
+alias tspip="pip install -i https://pypi.tuna.tsinghua.edu.cn/simple"
+alias pypi='pip install -i https://pypi.python.org/simple'
+
+# kill process
+kport (){
+    kill -9 `lsof -i:$1 -t`
+}
+skport () {sudo kill -9 `sudo lsof -i:$1 -t`}
+kname() {
+    local pname=$1
+    if [ -z "$1" ]; then
+        echo "Usage: kname process_name"
+        return 1
+    fi
+    ps aux | grep "$pname" | grep -v grep | awk '{print $2}' | xargs -r kill -9
+}
+skname() {
+    local pname=$1
+    if [ -z "$1" ]; then
+        echo "Usage: kname process_name"
+        return 1
+    fi
+    ps aux | grep "$pname" | grep -v grep | awk '{print $2}' | sudo xargs -r kill -9
+}
+
+# create short cut
+lnfile() {
+   ln $1 $HOME/.local/bin/
+}
+# sort by file size
+dusort() {
+   du -sh * | sort -h
+}
+sdusort(){
+   sudo du -sh * | sort -h
+}
+
+# proxy
+alias proxy_off="unset all_proxy"
+alias ipinfo="curl http://ip-api.com/json/\?lang\=zh-CN"
+# test network
+curltest(){
+    curl -I https://www.facebook.com
+}
+pingtest(){
+    ping -c2 -i3 www.wzhecnu.cn
+}
+
+# ollama
+alias ollama="docker exec ollama ollama"

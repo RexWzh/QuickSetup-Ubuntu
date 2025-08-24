@@ -9,7 +9,7 @@ curl -sL ${REPO_DIR}/apts/basic.sh | bash
 curl -sL ${REPO_DIR}/config_files/apt_sourcd.sh | bash
 
 # debs
-curl -sL ${REPO_DIR}/debs/options.sh | bash
+curl -sL ${REPO_DIR}/debs/desktop.sh | bash
 
 # vscode extensions
 curl -sL ${REPO_DIR}/others/vscode.sh | bash
