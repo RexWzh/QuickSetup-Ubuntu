@@ -1,38 +1,61 @@
 # QuickSetup-Ubuntu
 
-## 简介
+🚀 一键搞定 Ubuntu 系统配置，告别重复安装的烦恼！
 
-QuickSetup-Ubuntu 提供一个脚本，能快速为 Ubuntu 系统安装所有必要的软件包和以来。
+## 这是什么？
 
-当前脚本涉及的命令及含义，均可以在这里：[Ubuntu 教程(一) | 必备软件的安装和配置](https://www.wzhecnu.cn/2021/08/20/server/02-ubuntu-basicapp/) 找到。
+新装了 Ubuntu 系统，又要重新安装一堆软件？这个脚本帮你一次性搞定：
+- 常用软件包安装
+- 开发环境配置  
+- 系统优化设置
+- 个性化配置
 
-对于新装的系统，写一个脚本很方便，但为了兼容各种复杂的情况，特别是系统安装并修改过了很多内容，要再根据各类边界条件完善脚本。
+详细的命令说明可以看这里：[Ubuntu 教程 | 必备软件安装配置](https://www.wzhecnu.cn/2021/08/20/server/02-ubuntu-basicapp/)
 
-## 使用说明
+## 快速开始
 
-一行命令安装：
+### 🎯 一键安装
 
 ```bash
 curl -sL https://raw.githubusercontent.com/RexWzh/QuickSetup-Ubuntu/main/scripts/quick-setup.sh | bash
 ```
 
-定制化安装：克隆仓库或从模板创建仓库，按个人使用习惯，修改配置文件
+### 🛠️ 自定义安装
+
+点击仓库的 "Use this template" 选项，根据自己需求进行个性化的配置调整：
 
 ```bash
 git clone https://github.com/RexWzh/QuickSetup-Ubuntu.git
 cd QuickSetup-Ubuntu
-# edit config.toml/pkg_source
+# 根据需要编辑 config.toml 和 pkg_source 目录
 bash scripts/quick-setup-local.sh
 ```
-
-## 配置
-
-脚本的配置通过 `config/config.yaml` 文件进行管理。你可以在此文件中指定安装所需的各类选项和设置。
-
-## 贡献
-
-请阅读 `CONTRIBUTING.md` 了解详细的行为准则及提交拉取请求的流程。
 
 ## 许可证
 
 此项目基于 MIT 许可证，详情请参阅 `LICENSE` 文件。
+
+## 📁 项目结构
+
+```
+scripts/
+├── advance/        # 高级工具 (Docker, Conda, Node.js 等)
+├── apts/          # APT 软件包安装
+├── config/        # 配置文件
+├── debs/          # DEB 包安装
+├── disk/          # 磁盘和用户管理
+├── others/        # 其他工具
+└── secure/        # 安全配置
+```
+
+## ⚙️ 配置说明
+
+配置文件在 `config/config.toml`，可以根据需要开启或关闭特定功能。
+
+## 🤝 参与贡献
+
+发现 bug 或有好的想法？欢迎提 Issue 或 PR！
+
+## 📄 开源协议
+
+MIT License - 随便用，记得点个 ⭐
