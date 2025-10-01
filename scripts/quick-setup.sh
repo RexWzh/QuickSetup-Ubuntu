@@ -6,7 +6,8 @@ REPO_DIR=https://raw.githubusercontent.com/RexWzh/QuickSetup-Ubuntu/main/scripts
 curl -sL ${REPO_DIR}/apts/basic.sh | bash
 
 # config files
-# curl -sL ${REPO_DIR}/config_files/apt_source.sh | bash
+# curl -sL ${REPO_DIR}/config/apt_source.sh | bash
+# curl -sL ${REPO_DIR}/config/docker-config.sh | bash
 
 # debs
 curl -sL ${REPO_DIR}/debs/desktop.sh | bash
