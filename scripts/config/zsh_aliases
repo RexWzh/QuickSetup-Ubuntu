@@ -7,6 +7,9 @@ alias tn="tmux new -s"
 alias ta="tmux attach -t"
 alias tk="tmux kill-session -t"
 
+# clipboard
+alias copy="xclip -selection clipboard"
+
 # edit zsh config
 alias vzsh="vim ~/.zshrc"
 alias valias="vim ~/.zsh_aliases"
