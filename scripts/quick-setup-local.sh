@@ -19,3 +19,4 @@ bash ${LOCAL_DIR}/others/vscode.sh
 bash ${LOCAL_DIR}/advance/conda.sh
 bash ${LOCAL_DIR}/advance/docker.sh
 bash ${LOCAL_DIR}/advance/node.sh
+bash ${LOCAL_DIR}/advance/oh-my-zsh.sh

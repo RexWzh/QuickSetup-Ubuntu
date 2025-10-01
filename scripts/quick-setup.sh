@@ -19,3 +19,4 @@ curl -sL ${REPO_DIR}/others/vscode.sh | bash
 curl -sL ${REPO_DIR}/advance/conda.sh | bash
 curl -sL ${REPO_DIR}/advance/docker.sh | bash
 curl -sL ${REPO_DIR}/advance/node.sh | bash
+# curl -sL ${REPO_DIR}/advance/oh-my-zsh.sh | bash
