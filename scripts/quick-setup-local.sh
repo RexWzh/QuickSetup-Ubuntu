@@ -6,7 +6,7 @@ LOCAL_DIR=$(dirname "$(readlink -f "$0")")
 bash ${LOCAL_DIR}/apts/basic.sh
 
 # config files
-bash ${LOCAL_DIR}/config_files/apt_sourcd.sh
+# bash ${LOCAL_DIR}/config_files/apt_source.sh
 
 # debs
 bash ${LOCAL_DIR}/debs/desktop.sh
