@@ -3,7 +3,7 @@
 # 更新软件包源列表
 sudo apt update
 # 基础工具
-sudo apt install vim git nginx curl tmux zsh tree -y
+sudo apt install vim git nginx curl tmux zsh tree pwgen -y
 sudo apt install ncdu -y # 磁盘占用查看工具
 sudo apt install smem -y # 内存占用查看工具
 
