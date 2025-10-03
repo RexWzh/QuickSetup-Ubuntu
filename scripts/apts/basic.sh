@@ -38,4 +38,4 @@ sudo apt install xclip -y
 sudo apt install ffmpeg -y
 
 # 安装硬盘管理工具
-sudo apt install testdisk network-manager gddrescue lvm2 sshfs smartmontools -y
+sudo apt install testdisk network-manager gddrescue lvm2 sshfs smartmontools gparted -y
