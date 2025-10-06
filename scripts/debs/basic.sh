@@ -30,7 +30,7 @@ install_software "http://go.microsoft.com/fwlink/?LinkID=760868" "code.deb"
 install_software "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" "google-chrome-stable_current_amd64.deb"
 
 # 安装 Linux QQ
-install_software "https://dldir1.qq.com/qqfile/qq/QQNT/852276c1/linuxqq_3.2.5-21453_amd64.deb" "linuxqq_3.2.5-21453_amd64.deb"
+# install_software "https://dldir1.qq.com/qqfile/qq/QQNT/852276c1/linuxqq_3.2.5-21453_amd64.deb" "linuxqq_3.2.5-21453_amd64.deb"
 
 # 安装 Linux WPS
-install_software "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/11711/wps-office_11.1.0.11711_amd64.deb" "wps-office_11.1.0.11711_amd64.deb"
+# install_software "https://wps-linux-personal.wpscdn.cn/wps/download/ep/Linux2019/11711/wps-office_11.1.0.11711_amd64.deb" "wps-office_11.1.0.11711_amd64.deb"

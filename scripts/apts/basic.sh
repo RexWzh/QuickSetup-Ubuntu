@@ -37,5 +37,8 @@ sudo apt install xclip -y
 # 安装 ffmpeg
 sudo apt install ffmpeg -y
 
+# 安装防火墙
+sudo apt install ufw -y
+
 # 安装硬盘管理工具
 sudo apt install testdisk network-manager gddrescue lvm2 sshfs smartmontools gparted -y

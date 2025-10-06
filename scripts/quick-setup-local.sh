@@ -10,6 +10,7 @@ bash ${LOCAL_DIR}/apts/basic.sh
 # bash ${LOCAL_DIR}/config/docker-config.sh
 
 # debs
+# bash ${LOCAL_DIR}/debs/basic.sh
 bash ${LOCAL_DIR}/debs/desktop.sh
 
 # vscode extensions
