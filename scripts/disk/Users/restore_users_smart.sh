@@ -14,8 +14,25 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # 检查参数
+FORCE_UPDATE=false
+UPDATE_PASSWORD=false
+INPUT_FILE=""
+
+while getopts "fp" opt; do
+  case $opt in
+    f) FORCE_UPDATE=true ;;
+    p) UPDATE_PASSWORD=true ;;
+    *) echo "用法: $0 [-f] [-p] <users_backup.jsonl>"
+       exit 1 ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
 if [ $# -ne 1 ]; then
-    echo "用法: $0 <users_backup.json>"
+    echo "用法: $0 [-f] [-p] <users_backup.jsonl>"
+    echo "  -f  强制模式：如果目标 ID 被占用，将占用者移动到新的空闲 ID"
+    echo "  -p  更新密码：默认不更新密码，使用此选项强制同步密码"
     exit 1
 fi
 
@@ -39,13 +56,10 @@ echo "正在读取用户配置文件: $INPUT_FILE"
 # 函数: 处理组 (Create or Update)
 # ==============================================================================
 ensure_group() {
-    local group_json=$1
-    # 提取字段
-    local group_name=$(echo "$group_json" | jq -r '.group_name')
-    local target_gid=$(echo "$group_json" | jq -r '.gid')
+    local group_name=$1
+    local target_gid=$2
 
     if [ -z "$group_name" ] || [ "$group_name" == "null" ]; then
-         # 尝试兼容旧格式或不同字段名
          return 0
     fi
     
@@ -74,29 +88,20 @@ ensure_group() {
         # 2. 组不存在，检查目标 GID 是否被占用
         if getent group "$target_gid" &>/dev/null; then
             occupier=$(getent group "$target_gid" | cut -d: -f1)
-            echo "[ERROR] 无法创建组 '$group_name'，因为 GID $target_gid 已被 '$occupier' 占用"
-            return 1
+            
+            if [ "$FORCE_UPDATE" = true ]; then
+                local new_gid=$(get_free_gid)
+                echo "  [FORCE] 目标 GID $target_gid 已被组 '$occupier' 占用。正在将 '$occupier' 移动到 GID $new_gid..."
+                groupmod -g "$new_gid" "$occupier"
+                echo "  已移动冲突组 '$occupier' -> $new_gid"
+            else
+                echo "[ERROR] 无法创建组 '$group_name'，因为 GID $target_gid 已被 '$occupier' 占用"
+                return 1
+            fi
         fi
 
         echo "[CREATE] 创建组 '$group_name' (GID: $target_gid)"
         groupadd -g "$target_gid" "$group_name"
-    fi
-}
-
-# ==============================================================================
-# 函数: 辅助处理用户的主组 (Ensure Primary Group Exists)
-# ==============================================================================
-ensure_primary_group() {
-    local group_name=$1
-    local target_gid=$2
-    # 简化的组检查，主要用于确保用户创建前组已存在
-    if ! getent group "$group_name" &>/dev/null; then
-        if getent group "$target_gid" &>/dev/null; then
-            echo "  错误: 无法创建主组 '$group_name' (GID $target_gid 已占用)"
-            return 1
-        fi
-        groupadd -g "$target_gid" "$group_name"
-        echo "  已创建主组 '$group_name'"
     fi
 }
 
@@ -117,10 +122,9 @@ ensure_user() {
     echo "----------------------------------------------------------------"
     echo "处理用户: $username (目标 UID: $target_uid)"
 
-    # 1. 确保主组就绪
-    # 注意：JSONL 中 Group 记录应该在 User 之前。
-    # 这里再次检查是为了防止 User 记录先于 Group 记录出现，或者 User 使用了未导出的组
-    ensure_primary_group "$primary_group" "$target_gid"
+    # 1. 确保主组就绪 (Create or Update)
+    # 使用 ensure_group 统一处理主组的创建或 GID 修正
+    ensure_group "$primary_group" "$target_gid"
     
     # 2. 检查用户是否存在
     if id "$username" &>/dev/null; then
@@ -134,8 +138,16 @@ ensure_user() {
             # 检查目标 UID 占用
             if getent passwd "$target_uid" &>/dev/null; then
                 occupier=$(getent passwd "$target_uid" | cut -d: -f1)
-                echo "  错误: 目标 UID $target_uid 已被用户 '$occupier' 占用，跳过修改"
-                return 1
+                
+                if [ "$FORCE_UPDATE" = true ]; then
+                    local new_uid=$(get_free_uid)
+                    echo "  [FORCE] 目标 UID $target_uid 已被用户 '$occupier' 占用。正在将 '$occupier' 移动到 UID $new_uid..."
+                    usermod -u "$new_uid" "$occupier"
+                    echo "  已移动冲突用户 '$occupier' -> $new_uid"
+                else
+                    echo "  错误: 目标 UID $target_uid 已被用户 '$occupier' 占用，跳过修改"
+                    return 1
+                fi
             fi
 
             # 修改 UID (自动修复 home 目录归属)
@@ -146,6 +158,9 @@ ensure_user() {
         fi
 
         # 检查主组是否需要修改
+        # 注意：上面的 ensure_group 可能已经修正了组的 GID，
+        # 这里 usermod -g 主要是确保用户的 Primary Group 指向正确（如果用户被分配到了错误的组）
+        current_gid=$(id -g "$username") # 重新获取，因为 ensure_group 可能改变了它
         if [ "$current_gid" != "$target_gid" ]; then
              echo "  [UPDATE] 主组 GID 不匹配 ($current_gid -> $target_gid)"
              usermod -g "$target_gid" "$username"
@@ -154,6 +169,13 @@ ensure_user() {
         
         # 确保 Shell 和 Home 设置正确
         usermod -s "$shell" -d "$home" "$username"
+
+        # 强制修正 Home 目录的所有权 (递归)
+        # 即使 UID/GID 看起来匹配，文件系统上的文件可能仍属于旧 ID (特别是 groupmod 不会递归修改文件)
+        if [ -d "$home" ]; then
+             echo "  正在修正 Home 目录权限 ($home)..."
+             chown -R "$target_uid:$target_gid" "$home"
+        fi
 
     else
         # 3. 用户不存在，创建新用户
@@ -178,7 +200,7 @@ ensure_user() {
     fi
 
     # 4. 还原密码
-    if [ -n "$password_hash" ] && [ "$password_hash" != "null" ]; then
+    if [ "$UPDATE_PASSWORD" = true ] && [ -n "$password_hash" ] && [ "$password_hash" != "null" ]; then
         # 仅当哈希值不同时才更新（为了安全，直接覆盖）
         echo "$username:$password_hash" | chpasswd -e
         echo "  已同步密码"
@@ -195,7 +217,7 @@ ensure_user() {
 # 主循环 (JSONL 处理)
 # ==============================================================================
 
-while IFS= read -r line; do
+while IFS= read -r line || [ -n "$line" ]; do
     # 跳过空行
     [ -z "$line" ] && continue
     
@@ -203,13 +225,17 @@ while IFS= read -r line; do
     type=$(echo "$line" | jq -r '.type')
     
     if [ "$type" == "group" ]; then
-        ensure_group "$line"
+        group_name=$(echo "$line" | jq -r '.group_name')
+        gid=$(echo "$line" | jq -r '.gid')
+        ensure_group "$group_name" "$gid"
     elif [ "$type" == "user" ]; then
         ensure_user "$line"
     else
         echo "未知记录类型: $type (跳过)"
     fi
 done < "$INPUT_FILE"
+
+
 
 echo "----------------------------------------------------------------"
 echo "完成。请检查上方日志是否有错误信息。"
