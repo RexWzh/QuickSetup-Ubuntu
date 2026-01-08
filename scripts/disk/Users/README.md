@@ -32,10 +32,11 @@ sudo apt install jq -y
 *   **核心理念**: **"Check & Update" (检查并更新)**。优先修改现有用户，而非删除重建。
 *   **用法**:
     ```bash
-    sudo ./restore_users_smart.sh [-f] [-p] users_info.jsonl
+    sudo ./restore_users_smart.sh [-f] [-p] [-c] users_info.jsonl
     ```
     *   `-f`: **强制模式 (Force)**。遇到 UID/GID 冲突时，自动将占用者移动到新的空闲 ID，从而释放目标 ID。
     *   `-p`: **更新密码 (Password)**。默认不还原密码（保留现有密码）。加上此选项强制同步备份中的密码。
+    *   `-c`: **创建用户 (Create)**。默认仅更新现有用户，跳过不存在的用户。加上此选项才会创建新用户。
 
 #### 详细处理逻辑 (Processing Logic)
 
@@ -47,16 +48,19 @@ sudo apt install jq -y
     *   **不存在**: 创建新组 (`groupadd -g`)。
 
 2.  **用户处理 (User Processing)**:
-    *   **步骤 A: 确保主组存在**: 在处理用户前，确保其 Primary Group 已就绪。
     *   **步骤 B: 检查用户状态**:
         *   **如果用户已存在**:
+            *   **确保主组就绪**: 确保 Primary Group 存在且 GID 正确。
             *   对比 UID：如果不同，尝试修改 UID (`usermod -u`)。
             *   对比主组 GID：如果不同，修改主组 (`usermod -g`)。
             *   更新 Shell 和 Home 目录路径。
             *   **文件权限修复**: 递归修改 Home 目录下所有文件的所有者为新的 UID:GID (确保文件归属正确)。
         *   **如果用户不存在**:
-            *   直接创建新用户 (`useradd`)，指定 UID、GID、Home、Shell。
-            *   如果 Home 目录不存在，则创建并设置权限 (`cp -r /etc/skel` 逻辑由 mkdir 替代，仅创建空目录并 chown)。
+            *   **默认**: 跳过 (Skip)。避免污染系统。
+            *   **使用 -c**: 
+                *   确保主组就绪。
+                *   直接创建新用户 (`useradd`)，指定 UID、GID、Home、Shell。
+                *   如果 Home 目录不存在，则创建并设置权限 (`cp -r /etc/skel` 逻辑由 mkdir 替代，仅创建空目录并 chown)。
     *   **步骤 C: 还原密码**:
         *   **默认**: 跳过密码更新（保留系统当前密码）。
         *   **使用 -p**: 如果备份中有密码且与当前不一致，则强制覆盖 (`chpasswd -e`)。

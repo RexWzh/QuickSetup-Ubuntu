@@ -16,13 +16,15 @@ fi
 # 检查参数
 FORCE_UPDATE=false
 UPDATE_PASSWORD=false
+CREATE_MISSING=false
 INPUT_FILE=""
 
-while getopts "fp" opt; do
+while getopts "fpc" opt; do
   case $opt in
     f) FORCE_UPDATE=true ;;
     p) UPDATE_PASSWORD=true ;;
-    *) echo "用法: $0 [-f] [-p] <users_backup.jsonl>"
+    c) CREATE_MISSING=true ;;
+    *) echo "用法: $0 [-f] [-p] [-c] <users_backup.jsonl>"
        exit 1 ;;
   esac
 done
@@ -30,9 +32,10 @@ done
 shift $((OPTIND-1))
 
 if [ $# -ne 1 ]; then
-    echo "用法: $0 [-f] [-p] <users_backup.jsonl>"
+    echo "用法: $0 [-f] [-p] [-c] <users_backup.jsonl>"
     echo "  -f  强制模式：如果目标 ID 被占用，将占用者移动到新的空闲 ID"
     echo "  -p  更新密码：默认不更新密码，使用此选项强制同步密码"
+    echo "  -c  创建用户：如果用户不存在，则创建（默认仅更新现有用户，跳过不存在的）"
     exit 1
 fi
 
@@ -122,12 +125,12 @@ ensure_user() {
     echo "----------------------------------------------------------------"
     echo "处理用户: $username (目标 UID: $target_uid)"
 
-    # 1. 确保主组就绪 (Create or Update)
-    # 使用 ensure_group 统一处理主组的创建或 GID 修正
-    ensure_group "$primary_group" "$target_gid"
-    
-    # 2. 检查用户是否存在
+    # 1. 检查用户是否存在
     if id "$username" &>/dev/null; then
+        # 用户存在，必须确保主组就绪 (Create or Update)
+        # 使用 ensure_group 统一处理主组的创建或 GID 修正
+        ensure_group "$primary_group" "$target_gid"
+        
         current_uid=$(id -u "$username")
         current_gid=$(id -g "$username")
         
@@ -178,8 +181,16 @@ ensure_user() {
         fi
 
     else
-        # 3. 用户不存在，创建新用户
+        # 3. 用户不存在
+        if [ "$CREATE_MISSING" = false ]; then
+            echo "  [SKIP] 用户不存在且未指定 -c 选项，跳过创建"
+            return 0
+        fi
+
         echo "  [CREATE] 创建用户 $username"
+        
+        # 决定要创建用户了，先创建组
+        ensure_group "$primary_group" "$target_gid"
         
         # 检查目标 UID 占用
         if getent passwd "$target_uid" &>/dev/null; then
