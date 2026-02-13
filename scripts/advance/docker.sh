@@ -20,13 +20,9 @@ else
     # 创建下载目录
     mkdir -p $DOWNLOAD_DIR
     
-    ## 下载 v2.22.0 版本
-    curl -L https://github.com/docker/compose/releases/download/v2.22.0/docker-compose-`uname -s`-`uname -m` -o $DOWNLOAD_DIR/docker-compose
-    
-    ## 赋予执行权限，并移动到系统目录
-    chmod +x $DOWNLOAD_DIR/docker-compose
-    sudo cp $DOWNLOAD_DIR/docker-compose /usr/bin/
-    
+    ## 下载最新版本
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
     echo "Docker Compose 安装完成"
 fi
 

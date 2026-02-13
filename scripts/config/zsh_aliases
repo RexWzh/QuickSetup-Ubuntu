@@ -104,7 +104,7 @@ curltest(){
     curl -I https://www.facebook.com
 }
 pingtest(){
-    ping -c2 -i3 www.wzhecnu.cn
+    ping -c2 -i3 www.baidu.com
 }
 
 # ollama

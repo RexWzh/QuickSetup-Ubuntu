@@ -49,6 +49,19 @@ else
     # 初始化 conda (可选)
     echo "Initializing Conda..."
     source "$HOME/miniconda3/bin/conda" init
+    if [[ $? -ne 0 ]]; then
+        echo "Conda initialization failed. Please check the installation."
+        exit 1
+    fi
+    # 配置 bash 和 zsh
+    if [[ -f ~/.bashrc ]]; then
+        echo "Configuring bash..."
+        source "$HOME/miniconda3/bin/conda" init bash
+    fi
+    if [[ -f ~/.zshrc ]]; then
+        echo "Configuring zsh..."
+        source "$HOME/miniconda3/bin/conda" init zsh
+    fi
 
     echo "Miniconda installation script completed. Please restart your shell or run 'source $RC_FILE' to start using Conda."
 fi
